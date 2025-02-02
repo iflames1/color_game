@@ -36,8 +36,13 @@ function App() {
 
 	return (
 		<>
-			<div className="flex flex-col items-center justify-center">
-				<h1>Guess the Correct Color!</h1>
+			<div className="flex flex-col items-center justify-center w-screen">
+				<h1
+					className="text-2xl font-bold"
+					data-testid="gameInstructions"
+				>
+					Guess the Correct Color!
+				</h1>
 				<div
 					className="w-24 h-24 mt-4 border-2 rounded"
 					style={{
@@ -49,6 +54,7 @@ function App() {
 					{colors.map((color) => (
 						<button
 							key={color}
+							className="px-4 py-2 text-white rounded shadow-md"
 							style={{ backgroundColor: color }}
 							onClick={() => handleGuess(color)}
 							data-testid="colorOption"
@@ -57,8 +63,12 @@ function App() {
 						</button>
 					))}
 				</div>
-				<p data-testid="gameStatus">{message}</p>
-				<p>Score: {score}</p>
+				<p className="mt-4 text-lg" data-testid="gameStatus">
+					{message}
+				</p>
+				<p className="mt-2 text-lg font-bold" data-testid="score">
+					Score: {score}
+				</p>
 				<button onClick={startNewGame} data-testid="newGameButton">
 					New Game
 				</button>

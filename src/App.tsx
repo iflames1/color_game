@@ -9,12 +9,11 @@ function App() {
 	const [score, setScore] = useState(0);
 
 	const generateRandomColor = useCallback(() => {
-		const randomColor = colors[Math.floor(Math.random() * colors.length)];
-		setTargetColor(randomColor);
+		return colors[Math.floor(Math.random() * colors.length)];
 	}, []);
 
 	const startNewGame = useCallback(() => {
-		generateRandomColor();
+		setTargetColor(generateRandomColor());
 		setScore(0);
 		setMessage("Guess the correct color!");
 	}, [generateRandomColor]);
@@ -28,7 +27,7 @@ function App() {
 		if (color === targetColor) {
 			setScore(score + 1);
 			setMessage("Correct! Well done! 🎉");
-			generateRandomColor();
+			setTargetColor(generateRandomColor());
 		} else {
 			setScore(score - 1);
 			setMessage("Incorrect. Try again!");

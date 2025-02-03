@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 
 const colors = ["red", "blue", "green", "yellow", "purple", "orange"];
-const GAME_DURATION = 3000;
+const GAME_DURATION = 30;
 
 function App() {
 	const [targetColor, setTargetColor] = useState("");
@@ -11,6 +11,7 @@ function App() {
 	const [gameOver, setGameOver] = useState(false);
 	const [score, setScore] = useState(0);
 	const [scoreFeedback, setScoreFeedback] = useState<number | null>(null);
+	const [isCountingDown, setIsCountingDown] = useState(false);
 
 	const generateRandomColor = useCallback(() => {
 		return colors[Math.floor(Math.random() * colors.length)];
@@ -19,9 +20,10 @@ function App() {
 	const startNewGame = useCallback(() => {
 		setTargetColor(generateRandomColor());
 		setScore(0);
-		setMessage("Guess the correct color!");
+		setMessage("Pick the correct color!");
 		setTimeLeft(GAME_DURATION);
 		setGameOver(false);
+		setIsCountingDown(false);
 	}, [generateRandomColor]);
 
 	useEffect(() => {
@@ -29,19 +31,22 @@ function App() {
 	}, [startNewGame]);
 
 	useEffect(() => {
-		let timer: number | undefined;
-		if (timeLeft > 0 && !gameOver) {
-			timer = setInterval(() => {
+		if (isCountingDown && timeLeft > 0) {
+			const timer = setInterval(() => {
 				setTimeLeft((prev) => prev - 1);
 			}, 1000);
+			return () => clearInterval(timer);
 		} else if (timeLeft === 0) {
 			setGameOver(true);
 		}
-		return () => clearInterval(timer);
-	}, [timeLeft, gameOver]);
+	}, [isCountingDown, timeLeft]);
 
 	const handleGuess = (color: string) => {
 		if (gameOver) return;
+
+		if (!isCountingDown) {
+			setIsCountingDown(true);
+		}
 
 		if (color === targetColor) {
 			setScore((prev) => prev + 1);
@@ -60,14 +65,15 @@ function App() {
 	return (
 		<>
 			<div className="flex flex-col items-center justify-center min-h-screen w-screen p-4">
-				{/* Game Over Modal */}
 				{gameOver && (
-					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-						<div className="bg-white p-8 rounded-2xl text-center animate-pop-in">
+					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+						<div className="bg-white p-8 rounded-2xl text-center animate-pop-in text-black">
 							<h2 className="text-3xl font-bold mb-4">
 								Game Over! 🎮
 							</h2>
-							<p className="text-xl mb-6">Final Score: {score}</p>
+							<p className="text-xl mb-6 text-green-600">
+								Final Score: {score}
+							</p>
 							<button
 								onClick={startNewGame}
 								className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
@@ -78,14 +84,13 @@ function App() {
 					</div>
 				)}
 
-				{/* Main Game Interface */}
 				<div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full flex flex-col">
 					<h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
 						Color Game
 					</h1>
 
 					<div className="flex flex-col items-center mb-8">
-						<div className="relative">
+						<div className="relative z-0">
 							<div
 								className="w-32 h-32 rounded-2xl shadow-lg border-4 border-white transition-all duration-300"
 								style={{ backgroundColor: targetColor }}

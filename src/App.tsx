@@ -12,6 +12,9 @@ function App() {
 	const [score, setScore] = useState(0);
 	const [scoreFeedback, setScoreFeedback] = useState<number | null>(null);
 	const [isCountingDown, setIsCountingDown] = useState(false);
+	const [highScore, setHighScore] = useState(
+		() => Number(localStorage.getItem("highScore")) || 0
+	);
 
 	const generateRandomColor = useCallback(() => {
 		return colors[Math.floor(Math.random() * colors.length)];
@@ -38,8 +41,12 @@ function App() {
 			return () => clearInterval(timer);
 		} else if (timeLeft === 0) {
 			setGameOver(true);
+			if (score > highScore) {
+				setHighScore(score);
+				localStorage.setItem("highScore", String(score));
+			}
 		}
-	}, [isCountingDown, timeLeft]);
+	}, [isCountingDown, timeLeft, score, highScore]);
 
 	const handleGuess = (color: string) => {
 		if (gameOver) return;
@@ -74,6 +81,11 @@ function App() {
 							<p className="text-xl mb-6 text-green-600">
 								Final Score: {score}
 							</p>
+							<p className="text-xl mb-6 text-purple-500">
+								{score === highScore
+									? `New High Score!: ${highScore} 🔥`
+									: `High Score: ${score}`}
+							</p>
 							<button
 								onClick={startNewGame}
 								className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
@@ -87,8 +99,18 @@ function App() {
 				<div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full flex flex-col">
 					<h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
 						Color Game
-					</h1>
-
+					</h1>{" "}
+					<p
+						className={`text-center text-xl font-semibold ${
+							score <= 0
+								? "text-red-600"
+								: score > 0 && score <= highScore
+								? "text-green-600"
+								: "text-blue-600"
+						} mb-4`}
+					>
+						Score: {score}
+					</p>
 					<div className="flex flex-col items-center mb-8">
 						<div className="relative z-0">
 							<div
@@ -109,7 +131,6 @@ function App() {
 							)}
 						</div>
 					</div>
-
 					<div className="grid grid-cols-2 gap-4 mb-8">
 						{colors.map((color) => (
 							<button
@@ -123,15 +144,16 @@ function App() {
 							</button>
 						))}
 					</div>
-
 					<div className="text-center space-y-4">
 						<p className="text-xl font-semibold text-gray-700">
 							{message}
 						</p>
 						<div className="flex justify-center items-center gap-4">
 							<div className="bg-gray-100 px-4 py-2 rounded-full text-blue-600">
-								<span className="font-bold ">Score:</span>
-								<span className="ml-2 text-xl">{score}</span>
+								<span className="font-bold ">High Score:</span>
+								<span className="ml-2 text-xl">
+									{highScore}
+								</span>
 							</div>
 							<div className="bg-gray-100 px-4 py-2 rounded-full text-red-600">
 								<span className="font-bold ">Time:</span>
@@ -141,7 +163,6 @@ function App() {
 							</div>
 						</div>
 					</div>
-
 					<button
 						onClick={startNewGame}
 						className="mt-8 bg-gray-800 text-white px-6 py-2 rounded-full w-fit mx-auto hover:bg-gray-900 transition-colors"

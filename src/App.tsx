@@ -34,19 +34,28 @@ function App() {
 	}, [startNewGame]);
 
 	useEffect(() => {
-		if (isCountingDown && timeLeft > 0) {
-			const timer = setInterval(() => {
-				setTimeLeft((prev) => prev - 1);
-			}, 1000);
-			return () => clearInterval(timer);
-		} else if (timeLeft === 0) {
-			setGameOver(true);
-			if (score > highScore) {
-				setHighScore(score);
-				localStorage.setItem("highScore", String(score));
-			}
-		}
-	}, [isCountingDown, timeLeft, score, highScore]);
+		console.log("first");
+
+		if (!isCountingDown || gameOver) return;
+
+		const timer = setInterval(() => {
+			setTimeLeft((prev) => {
+				if (prev <= 1) {
+					clearInterval(timer);
+					setGameOver(true);
+
+					if (score > highScore) {
+						setHighScore(score);
+						localStorage.setItem("highScore", String(score));
+					}
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [isCountingDown, gameOver, timeLeft, score, highScore]);
 
 	const handleGuess = (color: string) => {
 		if (gameOver) return;
@@ -57,7 +66,7 @@ function App() {
 
 		if (color === targetColor) {
 			setScore((prev) => prev + 1);
-			setMessage("Correct! Well done! 🎉");
+			setMessage("Correct! Well done! 🎉 Keep going!");
 			setTargetColor(generateRandomColor());
 			setScoreFeedback(1);
 		} else {
@@ -84,7 +93,7 @@ function App() {
 							<p className="text-xl mb-6 text-purple-500">
 								{score === highScore
 									? `New High Score!: ${highScore} 🔥`
-									: `High Score: ${score}`}
+									: `High Score: ${highScore}`}
 							</p>
 							<button
 								onClick={startNewGame}
